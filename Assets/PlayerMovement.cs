@@ -70,9 +70,13 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    // Ground = layer 3, Enemies = layer 6, Obstacles = layer 7
+    int collisionLayerMask = (1 << 3) | (1 << 6) | (1 << 7);
+
     void OnCollisionEnter2D(Collision2D col)
     {
-        if (col.gameObject.CompareTag("Ground")) onGroundState = true;
+        if (((collisionLayerMask & (1 << col.gameObject.layer)) > 0) && !onGroundState)
+            onGroundState = true;
     }
 
     // updated: also hides enemies and static environment
