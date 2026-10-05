@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -14,16 +13,12 @@ public class PlayerMovement : MonoBehaviour
     private SpriteRenderer marioSprite;
     private bool faceRightState = true;
 
-    public TextMeshProUGUI scoreText;
-    public GameObject enemies;
-    public JumpOverGoomba jumpOverGoomba;
+    public GameManager gameManager;
+    public AudioSource marioAudio;
 
-    public GameObject gameOverPanel;
-    public TextMeshProUGUI gameOverScoreText;
-    public GameObject alwaysVisibleRestartButton;
-
-    // new field
-    public GameObject staticEnvironment;
+    private bool alive = true;
+    private bool moving = false;
+    private bool jumpedState = false;
 
     void Start()
     {
@@ -32,15 +27,14 @@ public class PlayerMovement : MonoBehaviour
         marioSprite = GetComponent<SpriteRenderer>();
     }
 
-    void Update()
+    void FlipMarioSprite(int value)
     {
-        if (Input.GetKeyDown("a") && faceRightState)
+        if (value == -1 && faceRightState)
         {
             faceRightState = false;
             marioSprite.flipX = true;
         }
-
-        if (Input.GetKeyDown("d") && !faceRightState)
+        else if (value == 1 && !faceRightState)
         {
             faceRightState = true;
             marioSprite.flipX = false;
@@ -49,24 +43,52 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        float moveHorizontal = Input.GetAxisRaw("Horizontal");
-
-        if (Mathf.Abs(moveHorizontal) > 0)
+        if (alive && moving)
         {
-            Vector2 movement = new Vector2(moveHorizontal, 0);
-            if (marioBody.linearVelocity.magnitude < maxSpeed)
-                marioBody.AddForce(movement * speed);
+            Move(faceRightState == true ? 1 : -1);
         }
+    }
 
-        if (Input.GetKeyUp("a") || Input.GetKeyUp("d"))
+    void Move(int value)
+    {
+        Vector2 movement = new Vector2(value, 0);
+        // check if it doesn't go beyond maxSpeed
+        if (marioBody.linearVelocity.magnitude < maxSpeed)
+            marioBody.AddForce(movement * speed);
+    }
+
+    public void MoveCheck(int value)
+    {
+        if (value == 0)
         {
-            marioBody.linearVelocity = Vector2.zero;
+            moving = false;
         }
+        else
+        {
+            FlipMarioSprite(value);
+            moving = true;
+            Move(value);
+        }
+    }
 
-        if (Input.GetKeyDown("space") && onGroundState)
+    public void Jump()
+    {
+        if (alive && onGroundState)
         {
             marioBody.AddForce(Vector2.up * upSpeed, ForceMode2D.Impulse);
+            marioAudio.Play();
             onGroundState = false;
+            jumpedState = true;
+        }
+    }
+
+    public void JumpHold()
+    {
+        if (alive && jumpedState)
+        {
+            // jump higher
+            marioBody.AddForce(Vector2.up * upSpeed * 30, ForceMode2D.Force);
+            jumpedState = false;
         }
     }
 
@@ -79,45 +101,38 @@ public class PlayerMovement : MonoBehaviour
             onGroundState = true;
     }
 
-    // updated: also hides enemies and static environment
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.CompareTag("Enemy"))
+        if (other.gameObject.CompareTag("Enemy") && alive)
         {
-            Debug.Log("Collided with goomba!");
-            Time.timeScale = 0.0f;
-            gameOverPanel.SetActive(true);
-            gameOverScoreText.text = "Score: " + jumpOverGoomba.score.ToString();
-            alwaysVisibleRestartButton.SetActive(false);
-            enemies.SetActive(false);
-            staticEnvironment.SetActive(false);
+            bool falling = marioBody.linearVelocity.y < 0;
+            bool above = transform.position.y > other.transform.position.y + 0.5f;
+
+            if (falling && above)
+            {
+                // stomp: squash the goomba and bounce mario up a little
+                other.GetComponent<EnemyMovement>().Stomp();
+                marioBody.linearVelocity = new Vector2(marioBody.linearVelocity.x, 0);
+                marioBody.AddForce(Vector2.up * upSpeed * 0.5f, ForceMode2D.Impulse);
+            }
+            else
+            {
+                Debug.Log("Collided with goomba!");
+                alive = false;
+                gameManager.GameOver();
+            }
         }
     }
 
-    // updated: also re-shows enemies and static environment
-    public void RestartButtonCallback(int input)
+    public void GameRestart()
     {
-        Debug.Log("Restart!");
-        ResetGame();
-        Time.timeScale = 1.0f;
-        gameOverPanel.SetActive(false);
-        alwaysVisibleRestartButton.SetActive(true);
-        enemies.SetActive(true);
-        staticEnvironment.SetActive(true);
-    }
-
-    public void ResetGame()
-    {
+        // reset position
         marioBody.transform.position = new Vector3(-22.46f, -1.45f, 0.0f);
+        marioBody.linearVelocity = Vector2.zero;
+        // reset sprite direction
         faceRightState = true;
         marioSprite.flipX = false;
-        scoreText.text = "Score: 0";
-
-        foreach (Transform eachChild in enemies.transform)
-        {
-            eachChild.localPosition = eachChild.GetComponent<EnemyMovement>().startPosition;
-        }
-
-        jumpOverGoomba.score = 0;
+        moving = false;
+        alive = true;
     }
 }

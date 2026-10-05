@@ -1,30 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 
 public class JumpOverGoomba : MonoBehaviour
 {
     public Transform enemyLocation;
-    public TextMeshProUGUI scoreText;
     private bool onGroundState;
-
-    [System.NonSerialized]
-    public int score = 0;
 
     private bool countScoreState = false;
     public Vector3 boxSize;
     public float maxDistance;
     public LayerMask layerMask;
 
+    GameManager gameManager;
+
     void Start()
     {
-
-    }
-
-    void Update()
-    {
-
+        gameManager = GameObject.FindGameObjectWithTag("Manager").GetComponent<GameManager>();
     }
 
     void FixedUpdate()
@@ -35,14 +27,13 @@ public class JumpOverGoomba : MonoBehaviour
             countScoreState = true;
         }
 
+        // when jumping, and Goomba is near Mario and we haven't registered our score
         if (!onGroundState && countScoreState)
         {
             if (Mathf.Abs(transform.position.x - enemyLocation.position.x) < 0.5f)
             {
                 countScoreState = false;
-                score++;
-                scoreText.text = "Score: " + score.ToString();
-                Debug.Log(score);
+                gameManager.IncreaseScore(1);
             }
         }
     }
