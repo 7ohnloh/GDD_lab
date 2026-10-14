@@ -15,6 +15,7 @@ public class PlayerMovement : MonoBehaviour
 
     public GameManager gameManager;
     public AudioSource marioAudio;
+    public AudioSource stompAudio;     // smb_stomp, played when a goomba dies
 
     private bool alive = true;
     private bool moving = false;
@@ -112,6 +113,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 // stomp: squash the goomba and bounce mario up a little
                 other.GetComponent<EnemyMovement>().Stomp();
+                stompAudio.Play();
                 marioBody.linearVelocity = new Vector2(marioBody.linearVelocity.x, 0);
                 marioBody.AddForce(Vector2.up * upSpeed * 0.5f, ForceMode2D.Impulse);
             }

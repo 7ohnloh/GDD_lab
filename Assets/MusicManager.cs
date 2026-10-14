@@ -9,6 +9,8 @@ public class MusicManager : MonoBehaviour
     {
         // snapshot transitions must keep running while Time.timeScale = 0 on game over
         mixer.updateMode = AudioMixerUpdateMode.UnscaledTime;
+        // the mixer keeps its snapshot between scene loads, so undo a leftover GameOver
+        mixer.FindSnapshot("Gameplay").TransitionTo(0f);
     }
 
     public void GameOver()

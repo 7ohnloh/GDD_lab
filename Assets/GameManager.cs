@@ -9,27 +9,35 @@ public class GameManager : MonoBehaviour
     public UnityEvent<int> scoreChange;
     public UnityEvent gameOver;
 
-    private int score = 0;
+    // score lives in a ScriptableObject so it survives scene loads and keeps the highscore
+    public IntVariable gameScore;
+
+    void Awake()
+    {
+        gameScore.LoadHighestValue();
+    }
 
     void Start()
     {
         gameStart.Invoke();
         Time.timeScale = 1.0f;
+        gameScore.Value = 0;
+        SetScore(gameScore.Value);
     }
 
     public void GameRestart()
     {
         // reset score
-        score = 0;
-        SetScore(score);
+        gameScore.Value = 0;
+        SetScore(gameScore.Value);
         gameRestart.Invoke();
         Time.timeScale = 1.0f;
     }
 
     public void IncreaseScore(int increment)
     {
-        score += increment;
-        SetScore(score);
+        gameScore.ApplyChange(increment);
+        SetScore(gameScore.Value);
     }
 
     public void SetScore(int score)
@@ -39,6 +47,7 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
+        PlayerPrefs.Save();
         Time.timeScale = 0.0f;
         gameOver.Invoke();
     }

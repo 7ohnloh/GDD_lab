@@ -5,7 +5,7 @@ public class BounceOnHitFromBelow : MonoBehaviour
 {
     public float bounceImpulse = 5f;   // how hard the box pops up
     public float settleTime = 1f;      // seconds to let the spring wobble before locking
-    public GameObject coin;            // optional: leave empty for a brick without a coin
+    public GameObject coin;            // optional: coin or powerup to reveal, leave empty for a plain brick
 
     private Rigidbody2D body;
     private Animator animator;         // optional: only the question box has one
@@ -20,6 +20,26 @@ public class BounceOnHitFromBelow : MonoBehaviour
         // locked by default so Mario standing on top doesn't push it down
         body.constraints = RigidbodyConstraints2D.FreezeAll;
         if (coin != null) coin.SetActive(false);
+        // reset this box whenever the game restarts
+        FindAnyObjectByType<GameManager>().gameRestart.AddListener(GameRestart);
+    }
+
+    public void GameRestart()
+    {
+        StopAllCoroutines();
+        used = false;
+        body.constraints = RigidbodyConstraints2D.FreezeAll;
+        body.linearVelocity = Vector2.zero;
+        body.position = startPosition;
+        // back to the default (unhit) animation state
+        if (animator != null) animator.Rebind();
+
+        if (coin != null)
+        {
+            MagicMushroom mushroom = coin.GetComponent<MagicMushroom>();
+            if (mushroom != null) mushroom.GameRestart();
+            coin.SetActive(false);
+        }
     }
 
     void OnCollisionEnter2D(Collision2D col)
