@@ -74,6 +74,7 @@ GameObject:
   - component: {fileID: 4792620106017585982}
   - component: {fileID: 9016519688639174407}
   - component: {fileID: 5441962870152213856}
+  - component: {fileID: 278151172749540965}
   m_Layer: 7
   m_Name: Brick
   m_TagString: Untagged
@@ -264,3 +265,31 @@ MonoBehaviour:
   bounceImpulse: 5
   settleTime: 1
   coin: {fileID: 0}
+--- !u!114 &278151172749540965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8780314902431992323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89596cf4d4e8040cd9d8747f42d8a3c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SimpleGameEventListener
+  Event: {fileID: 11400000, guid: 70208c1e0195049249a2b42c82933fc7, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 5441962870152213856}
+        m_TargetAssemblyTypeName: BounceOnHitFromBelow, Assembly-CSharp
+        m_MethodName: GameRestart
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2

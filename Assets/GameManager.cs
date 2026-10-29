@@ -4,10 +4,9 @@ using UnityEngine.Events;
 public class GameManager : MonoBehaviour
 {
     // events
-    public UnityEvent gameStart;
-    public UnityEvent gameRestart;
-    public UnityEvent<int> scoreChange;
-    public UnityEvent gameOver;
+    public SimpleGameEvent gameStart;      // OnGameStart
+    public IntGameEvent scoreChange;       // OnScoreChange
+    public SimpleGameEvent gameOver;
 
     // score lives in a ScriptableObject so it survives scene loads and keeps the highscore
     public IntVariable gameScore;
@@ -19,21 +18,22 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        gameStart.Invoke();
+        gameStart.Raise();
         Time.timeScale = 1.0f;
         gameScore.Value = 0;
         SetScore(gameScore.Value);
     }
 
+    // response to OnGameRestart
     public void GameRestart()
     {
         // reset score
         gameScore.Value = 0;
         SetScore(gameScore.Value);
-        gameRestart.Invoke();
         Time.timeScale = 1.0f;
     }
 
+    // response to OnIncreaseScore
     public void IncreaseScore(int increment)
     {
         gameScore.ApplyChange(increment);
@@ -42,13 +42,14 @@ public class GameManager : MonoBehaviour
 
     public void SetScore(int score)
     {
-        scoreChange.Invoke(score);
+        scoreChange.Raise(score);
     }
 
+    // response to OnDamagePlayer
     public void GameOver()
     {
         PlayerPrefs.Save();
         Time.timeScale = 0.0f;
-        gameOver.Invoke();
+        gameOver.Raise();
     }
 }

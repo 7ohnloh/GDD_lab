@@ -13,7 +13,7 @@ public class PlayerMovement : MonoBehaviour
     private SpriteRenderer marioSprite;
     private bool faceRightState = true;
 
-    public GameManager gameManager;
+    public SimpleGameEvent onDamagePlayer;   // raised when an enemy hits Mario
     public AudioSource marioAudio;
     public AudioSource stompAudio;     // smb_stomp, played when a goomba dies
 
@@ -121,7 +121,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 Debug.Log("Collided with goomba!");
                 alive = false;
-                gameManager.GameOver();
+                onDamagePlayer.Raise();
             }
         }
     }

@@ -11,8 +11,6 @@ public class PauseButtonController : MonoBehaviour
 
     void Start()
     {
-        // unpause if the game is restarted while paused
-        FindAnyObjectByType<GameManager>().gameRestart.AddListener(Resume);
         label.text = "PAUSE";
     }
 
@@ -32,7 +30,7 @@ public class PauseButtonController : MonoBehaviour
         label.text = "RESUME";
     }
 
-    void Resume()
+    public void Resume()
     {
         isPaused = false;
         Time.timeScale = 1.0f;

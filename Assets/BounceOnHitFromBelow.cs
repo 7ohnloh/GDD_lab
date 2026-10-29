@@ -20,8 +20,6 @@ public class BounceOnHitFromBelow : MonoBehaviour
         // locked by default so Mario standing on top doesn't push it down
         body.constraints = RigidbodyConstraints2D.FreezeAll;
         if (coin != null) coin.SetActive(false);
-        // reset this box whenever the game restarts
-        FindAnyObjectByType<GameManager>().gameRestart.AddListener(GameRestart);
     }
 
     public void GameRestart()
