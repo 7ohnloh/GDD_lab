@@ -17,3 +17,5 @@ MonoBehaviour:
     powerupCollected: 99
   - fromState: 1
     powerupCollected: 99
+  - fromState: 4
+    powerupCollected: 99

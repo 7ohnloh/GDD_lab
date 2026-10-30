@@ -299,6 +299,123 @@ public static class LabExtras
         EditorBuildSettings.scenes = scenes.ToArray();
     }
 
+    // ---------------- Step 17: sound when the blink (InvincibleSmallMario) ends ----------------
+    [MenuItem("Tools/Lab Extras/Add State Change Sounds")]
+    static void AddStateChangeSounds()
+    {
+        const string folder = "Assets/ScriptableObjects/MarioFSM";
+        string path = folder + "/PlayBlinkEndSound.asset";
+        PlaySoundAction play = AssetDatabase.LoadAssetAtPath<PlaySoundAction>(path);
+        if (play == null)
+        {
+            play = ScriptableObject.CreateInstance<PlaySoundAction>();
+            AssetDatabase.CreateAsset(play, path);
+        }
+        play.clip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Sounds/smb_bump.wav");
+        EditorUtility.SetDirty(play);
+
+        State blink = AssetDatabase.LoadAssetAtPath<State>(folder + "/InvincibleSmallMario.asset");
+        if (System.Array.IndexOf(blink.exitActions, play) < 0)
+        {
+            var list = new System.Collections.Generic.List<Action>(blink.exitActions) { play };
+            blink.exitActions = list.ToArray();
+            EditorUtility.SetDirty(blink);
+        }
+        AssetDatabase.SaveAssets();
+        Debug.Log("Lab Extras: InvincibleSmallMario now plays smb_bump when the blink ends.");
+    }
+
+    // ---------------- Flower without mushroom: small Mario in fire colours ----------------
+    [MenuItem("Tools/Lab Extras/Setup Small Fire Mario")]
+    static void SetupSmallFireMario()
+    {
+        const string fsm = "Assets/ScriptableObjects/MarioFSM/";
+        const string spritePath = "Assets/Sprites/mario-small-fire.png";
+
+        // 1. import the recoloured sprite like the other Mario sprites (16 px per unit, crisp pixels)
+        TextureImporter ti = (TextureImporter)AssetImporter.GetAtPath(spritePath);
+        ti.textureType = TextureImporterType.Sprite;
+        ti.spriteImportMode = SpriteImportMode.Single;
+        ti.spritePixelsPerUnit = 16;
+        ti.filterMode = FilterMode.Point;
+        ti.textureCompression = TextureImporterCompression.Uncompressed;
+        ti.SaveAndReimport();
+        Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
+
+        // 2. animation clip + animator controller, same simple pose setup as SmallMario
+        string clipPath = "Assets/Animations/Mario/mario-small-fire.anim";
+        AnimationClip clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(clipPath);
+        if (clip == null)
+        {
+            clip = new AnimationClip { frameRate = 60 };
+            var binding = EditorCurveBinding.PPtrCurve("", typeof(SpriteRenderer), "m_Sprite");
+            AnimationUtility.SetObjectReferenceCurve(clip, binding, new[] { new ObjectReferenceKeyframe { time = 0, value = sprite } });
+            var settings = AnimationUtility.GetAnimationClipSettings(clip);
+            settings.loopTime = true;
+            AnimationUtility.SetAnimationClipSettings(clip, settings);
+            AssetDatabase.CreateAsset(clip, clipPath);
+        }
+        string ctrlPath = "Assets/Animations/Mario/SmallFireMario.controller";
+        RuntimeAnimatorController ctrl = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(ctrlPath);
+        if (ctrl == null) ctrl = UnityEditor.Animations.AnimatorController.CreateAnimatorControllerAtPathWithClip(ctrlPath, clip);
+
+        // 3. FSM pieces
+        SetupAnimator setup = AssetDatabase.LoadAssetAtPath<SetupAnimator>(fsm + "SetupSmallFireMario.asset");
+        if (setup == null) { setup = ScriptableObject.CreateInstance<SetupAnimator>(); AssetDatabase.CreateAsset(setup, fsm + "SetupSmallFireMario.asset"); }
+        setup.animatorController = ctrl;
+
+        TransformDecision toSmallFire = AssetDatabase.LoadAssetAtPath<TransformDecision>(fsm + "ShouldTransformToSmallFireMario.asset");
+        if (toSmallFire == null) { toSmallFire = ScriptableObject.CreateInstance<TransformDecision>(); AssetDatabase.CreateAsset(toSmallFire, fsm + "ShouldTransformToSmallFireMario.asset"); }
+        toSmallFire.map = new[] { new StateTransformMap { fromState = MarioState.SmallMario, powerupCollected = PowerupType.FireFlower } };
+
+        // big Fire Mario now comes from Super + flower, or small-fire + mushroom
+        TransformDecision toFire = AssetDatabase.LoadAssetAtPath<TransformDecision>(fsm + "ShouldTransformToFireMario.asset");
+        toFire.map = new[] {
+            new StateTransformMap { fromState = MarioState.SuperMario, powerupCollected = PowerupType.FireFlower },
+            new StateTransformMap { fromState = MarioState.SmallFireMario, powerupCollected = PowerupType.MagicMushroom },
+        };
+        // small-fire Mario hit -> loses fire, blinks small (like Super/Fire)
+        TransformDecision toInv = AssetDatabase.LoadAssetAtPath<TransformDecision>(fsm + "ShouldTransformToInvincibleMario.asset");
+        bool hasSF = false;
+        foreach (var m in toInv.map) if (m.fromState == MarioState.SmallFireMario) hasSF = true;
+        if (!hasSF)
+        {
+            var l = new System.Collections.Generic.List<StateTransformMap>(toInv.map) { new StateTransformMap { fromState = MarioState.SmallFireMario, powerupCollected = PowerupType.Damage } };
+            toInv.map = l.ToArray();
+        }
+
+        State remain = AssetDatabase.LoadAssetAtPath<State>(fsm + "RemainInState.asset");
+        State fireState = AssetDatabase.LoadAssetAtPath<State>(fsm + "FireMario.asset");
+        State invState = AssetDatabase.LoadAssetAtPath<State>(fsm + "InvincibleSmallMario.asset");
+        Action clearPowerup = AssetDatabase.LoadAssetAtPath<Action>(fsm + "ClearPowerup.asset");
+        Action fireAttack = AssetDatabase.LoadAssetAtPath<Action>(fsm + "FireAttack.asset");
+
+        State smallFire = AssetDatabase.LoadAssetAtPath<State>(fsm + "SmallFireMario.asset");
+        if (smallFire == null) { smallFire = ScriptableObject.CreateInstance<State>(); AssetDatabase.CreateAsset(smallFire, fsm + "SmallFireMario.asset"); }
+        smallFire.setupActions = new Action[] { setup, clearPowerup };
+        smallFire.actions = new Action[0];
+        smallFire.eventTriggeredActions = new[] { new EventAction { action = fireAttack, type = ActionType.Attack } };
+        smallFire.exitActions = new Action[0];
+        smallFire.transitions = new[] {
+            new Transition { decision = toFire, trueState = fireState, falseState = remain },
+            new Transition { decision = toInv, trueState = invState, falseState = remain },
+        };
+        smallFire.sceneGizmoColor = new Color(1f, 0.5f, 0f);
+
+        // SmallMario + flower now goes to SmallFireMario instead of big FireMario
+        State small = AssetDatabase.LoadAssetAtPath<State>(fsm + "SmallMario.asset");
+        for (int i = 0; i < small.transitions.Length; i++)
+            if (small.transitions[i].decision == toFire)
+            {
+                small.transitions[i].decision = toSmallFire;
+                small.transitions[i].trueState = smallFire;
+            }
+
+        foreach (Object o in new Object[] { setup, toSmallFire, toFire, toInv, smallFire, small }) EditorUtility.SetDirty(o);
+        AssetDatabase.SaveAssets();
+        Debug.Log("Lab Extras: SmallFireMario set up. Small + flower = small fire Mario; then mushroom = big Fire Mario.");
+    }
+
     static T GetOrCreate<T>(string name) where T : ScriptableObject
     {
         string path = BuffFolder + "/" + name + ".asset";
