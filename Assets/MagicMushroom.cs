@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class MagicMushroom : MonoBehaviour
 {
-    public PowerupType powerupType = PowerupType.MagicMushroom;   // FireFlower for the flower
+    public PowerupType powerupType = PowerupType.MagicMushroom;   // FireFlower or StarMan for the other powerups
     public float moveSpeed = 3f;
     public float popImpulse = 6f;
     public AudioSource spawnAudio;     // smb_powerup_appears, played when it pops out
@@ -67,6 +67,14 @@ public class MagicMushroom : MonoBehaviour
         col.enabled = false;
         body.simulated = false;
         if (collectClip != null && spawnAudio != null) spawnAudio.PlayOneShot(collectClip);
+
+        // the star goes to the buff FSM; mushroom and flower go to Mario's form FSM
+        if (powerupType == PowerupType.StarMan)
+        {
+            BuffStateController b = player.GetComponent<BuffStateController>();
+            if (b != null) b.SetBuff(powerupType);
+            return;
+        }
 
         // tell Mario's FSM; it decides whether he becomes Super
         MarioStateController m = player.GetComponent<MarioStateController>();

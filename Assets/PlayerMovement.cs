@@ -117,7 +117,14 @@ public class PlayerMovement : MonoBehaviour
             bool falling = marioBody.linearVelocity.y < 0;
             bool above = transform.position.y > other.transform.position.y + 0.5f;
 
-            if (falling && above)
+            BuffStateController buff = GetComponent<BuffStateController>();
+            if (buff != null && buff.isStarman)
+            {
+                // star power: any touch squashes the goomba, Mario takes no damage
+                other.GetComponent<EnemyMovement>().Stomp();
+                stompAudio.Play();
+            }
+            else if (falling && above)
             {
                 // stomp: squash the goomba and bounce mario up a little
                 other.GetComponent<EnemyMovement>().Stomp();
