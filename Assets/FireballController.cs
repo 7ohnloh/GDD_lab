@@ -33,7 +33,19 @@ public class FireballController : MonoBehaviour
     {
         if (collision.gameObject.tag == "Enemy")
         {
+            // squash the goomba the same way a stomp does (also adds score)
+            collision.gameObject.GetComponent<EnemyMovement>()?.Stomp();
             // destroy self
+            Destroy(gameObject);
+        }
+    }
+
+    // the goomba's collider is a trigger, so a plain collision never fires
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Enemy"))
+        {
+            other.GetComponent<EnemyMovement>()?.Stomp();
             Destroy(gameObject);
         }
     }
