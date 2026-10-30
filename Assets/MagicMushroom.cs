@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class MagicMushroom : MonoBehaviour
 {
+    public PowerupType powerupType = PowerupType.MagicMushroom;   // FireFlower for the flower
     public float moveSpeed = 3f;
     public float popImpulse = 6f;
     public AudioSource spawnAudio;     // smb_powerup_appears, played when it pops out
@@ -69,7 +70,7 @@ public class MagicMushroom : MonoBehaviour
 
         // tell Mario's FSM; it decides whether he becomes Super
         MarioStateController m = player.GetComponent<MarioStateController>();
-        if (m != null) m.SetPowerup(PowerupType.MagicMushroom);
+        if (m != null) m.SetPowerup(powerupType);
     }
 
     // called by the question box on restart, even while this object is disabled
