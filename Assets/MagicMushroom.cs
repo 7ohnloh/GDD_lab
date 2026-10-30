@@ -4,8 +4,6 @@ public class MagicMushroom : MonoBehaviour
 {
     public float moveSpeed = 3f;
     public float popImpulse = 6f;
-    public float jumpMultiplier = 1.5f;
-    public float sizeMultiplier = 1.3f;
     public AudioSource spawnAudio;     // smb_powerup_appears, played when it pops out
     public AudioClip collectClip;      // smb_powerup, played when Mario eats it
 
@@ -15,11 +13,6 @@ public class MagicMushroom : MonoBehaviour
     private Vector3 startPosition;
     private int direction = 1;
     private bool collected = false;
-
-    // remember Mario's original stats so restart can undo the powerup
-    private PlayerMovement mario;
-    private float originalUpSpeed;
-    private Vector3 originalScale;
 
     void Awake()
     {
@@ -74,25 +67,14 @@ public class MagicMushroom : MonoBehaviour
         body.simulated = false;
         if (collectClip != null && spawnAudio != null) spawnAudio.PlayOneShot(collectClip);
 
-        if (mario == null)
-        {
-            mario = player;
-            originalUpSpeed = mario.upSpeed;
-            originalScale = mario.transform.localScale;
-            mario.upSpeed *= jumpMultiplier;
-            mario.transform.localScale = originalScale * sizeMultiplier;
-        }
+        // tell Mario's FSM; it decides whether he becomes Super
+        MarioStateController m = player.GetComponent<MarioStateController>();
+        if (m != null) m.SetPowerup(PowerupType.MagicMushroom);
     }
 
     // called by the question box on restart, even while this object is disabled
     public void GameRestart()
     {
-        if (mario != null)
-        {
-            mario.upSpeed = originalUpSpeed;
-            mario.transform.localScale = originalScale;
-            mario = null;
-        }
         gameObject.SetActive(false);
     }
 }

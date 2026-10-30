@@ -120,7 +120,6 @@ public class PlayerMovement : MonoBehaviour
             else
             {
                 Debug.Log("Collided with goomba!");
-                alive = false;
                 onDamagePlayer.Raise();
             }
         }
@@ -136,5 +135,11 @@ public class PlayerMovement : MonoBehaviour
         marioSprite.flipX = false;
         moving = false;
         alive = true;
+    }
+
+    // response to OnDamagePlayer: tell the FSM Mario was hit, and it decides shrink or die
+    public void DamageMario()
+    {
+        GetComponent<MarioStateController>().SetPowerup(PowerupType.Damage);
     }
 }
