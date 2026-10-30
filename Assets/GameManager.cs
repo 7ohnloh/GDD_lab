@@ -10,6 +10,8 @@ public class GameManager : MonoBehaviour
 
     // score lives in a ScriptableObject so it survives scene loads and keeps the highscore
     public IntVariable gameScore;
+    // World 1-1 starts from 0; World 1-2 keeps the score carried over from 1-1
+    public bool resetScoreOnStart = true;
 
     void Awake()
     {
@@ -20,7 +22,7 @@ public class GameManager : MonoBehaviour
     {
         gameStart.Raise();
         Time.timeScale = 1.0f;
-        gameScore.Value = 0;
+        if (resetScoreOnStart) gameScore.Value = 0;
         SetScore(gameScore.Value);
     }
 

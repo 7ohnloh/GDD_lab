@@ -210,6 +210,95 @@ public static class LabExtras
         Debug.Log("Lab Extras: star buff set up. Save the scene (File > Save).");
     }
 
+    // ---------------- Step 16: finish line and World 1-2 ----------------
+    const string World11Path = "Assets/Scenes/SampleScene.unity";
+    const string World12Path = "Assets/Scenes/World-1-2.unity";
+    const float FlagX = 34.5f;   // a bit before EndLimit so the camera can show it
+
+    [MenuItem("Tools/Lab Extras/Setup Finish Line And World 1-2")]
+    static void SetupWorld12()
+    {
+        Scene active = SceneManager.GetActiveScene();
+        if (active.path != World11Path)
+        {
+            EditorUtility.DisplayDialog("Lab Extras", "Open SampleScene first, then run this again.", "OK");
+            return;
+        }
+        if (!UnityEditor.SceneManagement.EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+
+        // 1. World 1-1 (SampleScene): flagpole -> World-1-2, score starts at 0
+        AddFlag("World-1-2");
+        SetResetScore(true);
+        UnityEditor.SceneManagement.EditorSceneManager.SaveScene(SceneManager.GetActiveScene());
+
+        // 2. World 1-2 = a copy of 1-1 (created once)
+        if (AssetDatabase.LoadAssetAtPath<SceneAsset>(World12Path) == null)
+            AssetDatabase.CopyAsset(World11Path, World12Path);
+        AddToBuildSettings(World12Path);
+
+        // 3. Make 1-2 different: underground colours and music, score carried over, flag -> MainMenu
+        Scene w12 = UnityEditor.SceneManagement.EditorSceneManager.OpenScene(World12Path);
+        Camera cam = Camera.main;
+        if (cam != null) cam.backgroundColor = Color.black;
+        AudioSource bgm = GameObject.Find("GameManager/BackgroundMusic")?.GetComponent<AudioSource>();
+        if (bgm != null) bgm.clip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Sounds/02-underworld.mp3");
+        SetResetScore(false);
+        FinishLine flag = Object.FindAnyObjectByType<FinishLine>();
+        if (flag != null) flag.nextScene = "MainMenu";
+        UnityEditor.SceneManagement.EditorSceneManager.SaveScene(w12);
+
+        // 4. Back to World 1-1
+        UnityEditor.SceneManagement.EditorSceneManager.OpenScene(World11Path);
+        Debug.Log("Lab Extras: flagpole added; World-1-2 created and added to the build. Both scenes are saved.");
+    }
+
+    static void AddFlag(string nextScene)
+    {
+        FinishLine existing = Object.FindAnyObjectByType<FinishLine>();
+        if (existing != null) { existing.nextScene = nextScene; EditorUtility.SetDirty(existing); return; }
+
+        GameObject flag = new GameObject("FinishLine");
+        Undo.RegisterCreatedObjectUndo(flag, "Add finish line");
+        SpriteRenderer sr = flag.AddComponent<SpriteRenderer>();
+        foreach (Object a in AssetDatabase.LoadAllAssetsAtPath("Assets/Sprites/misc-3.gif"))
+            if (a is Sprite sp && sp.name == "misc-3_9") sr.sprite = sp;   // green flagpole with its base block
+
+        // stand the pole on the ground: find the ground top under it
+        Physics2D.SyncTransforms();
+        float groundTop = -4.3f;
+        RaycastHit2D hit = Physics2D.Raycast(new Vector2(FlagX, 20f), Vector2.down, 40f, 1 << 3); // Ground layer
+        if (hit.collider != null) groundTop = hit.point.y;
+        float halfHeight = sr.sprite != null ? sr.sprite.bounds.extents.y : 5.25f;
+        flag.transform.position = new Vector3(FlagX, groundTop + halfHeight, 0f);
+
+        BoxCollider2D box = flag.AddComponent<BoxCollider2D>();
+        box.isTrigger = true;
+        AudioSource src = flag.AddComponent<AudioSource>();
+        src.clip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Sounds/smb_flagpole.wav");
+        src.playOnAwake = false;
+        AudioSource bgm = GameObject.Find("GameManager/BackgroundMusic")?.GetComponent<AudioSource>();
+        if (bgm != null) src.outputAudioMixerGroup = bgm.outputAudioMixerGroup;
+        FinishLine fl = flag.AddComponent<FinishLine>();
+        fl.nextScene = nextScene;
+    }
+
+    static void SetResetScore(bool reset)
+    {
+        GameManager gm = Object.FindAnyObjectByType<GameManager>();
+        if (gm == null) return;
+        Undo.RecordObject(gm, "Set score reset");
+        gm.resetScoreOnStart = reset;
+        EditorUtility.SetDirty(gm);
+    }
+
+    static void AddToBuildSettings(string path)
+    {
+        var scenes = new System.Collections.Generic.List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
+        foreach (var s in scenes) if (s.path == path) return;
+        scenes.Add(new EditorBuildSettingsScene(path, true));
+        EditorBuildSettings.scenes = scenes.ToArray();
+    }
+
     static T GetOrCreate<T>(string name) where T : ScriptableObject
     {
         string path = BuffFolder + "/" + name + ".asset";
