@@ -1829,7 +1829,6 @@ GameObject:
   - component: {fileID: 849053731}
   - component: {fileID: 849053730}
   - component: {fileID: 849053734}
-  - component: {fileID: 849053735}
   - component: {fileID: 849053736}
   - component: {fileID: 849053737}
   - component: {fileID: 849053738}
@@ -2007,24 +2006,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.8125, y: 1}
   m_EdgeRadius: 0
---- !u!114 &849053735
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 849053729}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 44661f1ea411d4d4ab52ff44a72dafaf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::JumpOverGoomba
-  enemyLocation: {fileID: 2085884941}
-  boxSize: {x: 0.5, y: 0.2, z: 0}
-  maxDistance: 0.5
-  layerMask:
-    serializedVersion: 2
-    m_Bits: 8
 --- !u!114 &849053736
 MonoBehaviour:
   m_ObjectHideFlags: 0
