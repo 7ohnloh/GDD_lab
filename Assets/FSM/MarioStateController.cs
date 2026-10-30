@@ -20,6 +20,9 @@ public class MarioStateController : StateController
     {
         // clear powerup
         currentPowerupType = PowerupType.Default;
+        // remove fireballs still flying, so they can't hit the respawned goombas
+        foreach (GameObject fireball in GameObject.FindGameObjectsWithTag("Fireball"))
+            Destroy(fireball);
         // set the start state
         TransitionToState(startState);
     }
