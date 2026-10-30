@@ -13,6 +13,7 @@ public class PlayerMovement : MonoBehaviour
     private SpriteRenderer marioSprite;
     private bool faceRightState = true;
 
+    public BoolVariable marioFaceRight;     // read by FireAttackAction
     public SimpleGameEvent onDamagePlayer;   // raised when an enemy hits Mario
     public AudioSource marioAudio;
     public AudioSource stompAudio;     // smb_stomp, played when a goomba dies
@@ -26,20 +27,27 @@ public class PlayerMovement : MonoBehaviour
         Application.targetFrameRate = 30;
         marioBody = GetComponent<Rigidbody2D>();
         marioSprite = GetComponent<SpriteRenderer>();
+        marioFaceRight.SetValue(true);   // Mario starts facing right
     }
 
     void FlipMarioSprite(int value)
     {
         if (value == -1 && faceRightState)
         {
-            faceRightState = false;
+            updateMarioShouldFaceRight(false);
             marioSprite.flipX = true;
         }
         else if (value == 1 && !faceRightState)
         {
-            faceRightState = true;
+            updateMarioShouldFaceRight(true);
             marioSprite.flipX = false;
         }
+    }
+
+    private void updateMarioShouldFaceRight(bool value)
+    {
+        faceRightState = value;
+        marioFaceRight.SetValue(faceRightState);
     }
 
     void FixedUpdate()
@@ -131,7 +139,7 @@ public class PlayerMovement : MonoBehaviour
         marioBody.transform.position = new Vector3(-22.46f, -1.45f, 0.0f);
         marioBody.linearVelocity = Vector2.zero;
         // reset sprite direction
-        faceRightState = true;
+        updateMarioShouldFaceRight(true);
         marioSprite.flipX = false;
         moving = false;
         alive = true;

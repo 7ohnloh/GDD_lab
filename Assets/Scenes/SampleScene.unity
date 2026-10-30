@@ -1859,6 +1859,7 @@ MonoBehaviour:
   speed: 25
   maxSpeed: 20
   upSpeed: 22
+  marioFaceRight: {fileID: 11400000, guid: bf26803cec7fe4e7ab3b144adb14710a, type: 2}
   onDamagePlayer: {fileID: 11400000, guid: ea8a33247da8f49849867e1a12dbd116, type: 2}
   marioAudio: {fileID: 849053738}
   stompAudio: {fileID: 849053739}
@@ -2114,6 +2115,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 08161210-368a-4b1f-9694-2688567c9bae
     m_ActionName: 'gameplay/point[/Mouse/leftButton,/Mouse/position]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 849053737}
+        m_TargetAssemblyTypeName: ActionManager, Assembly-CSharp
+        m_MethodName: OnFireAction
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 053d8d7a-acc9-4e3e-8127-c49a97980051
+    m_ActionName: 'gameplay/fire[/Keyboard/z]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: MarioActions
   m_DefaultActionMap: gameplay
@@ -2168,6 +2185,21 @@ MonoBehaviour:
         m_TargetAssemblyTypeName: PlayerMovement, Assembly-CSharp
         m_MethodName: MoveCheck
         m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  fire:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 849053742}
+        m_TargetAssemblyTypeName: MarioStateController, Assembly-CSharp
+        m_MethodName: Fire
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine

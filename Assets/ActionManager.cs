@@ -7,6 +7,7 @@ public class ActionManager : MonoBehaviour
     public UnityEvent jump;
     public UnityEvent jumpHold;
     public UnityEvent<int> moveCheck;
+    public UnityEvent fire;
 
     public void OnJumpHoldAction(InputAction.CallbackContext context)
     {
@@ -50,6 +51,13 @@ public class ActionManager : MonoBehaviour
             Debug.Log("move stopped");
             moveCheck.Invoke(0);
         }
+    }
+
+    // fire key (Z): only acts when the FSM state has an Attack action
+    public void OnFireAction(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+            fire.Invoke();
     }
 
     public void OnClickAction(InputAction.CallbackContext context)

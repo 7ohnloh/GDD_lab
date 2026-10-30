@@ -24,6 +24,12 @@ public class MarioStateController : StateController
         TransitionToState(startState);
     }
 
+    // called by ActionManager when Z is pressed; runs this state's Attack actions
+    public void Fire()
+    {
+        this.currentState.DoEventTriggeredActions(this, ActionType.Attack);
+    }
+
     public void SetPowerup(PowerupType i)
     {
         currentPowerupType = i;
