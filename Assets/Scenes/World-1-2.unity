@@ -5065,7 +5065,7 @@ GameObject:
   - component: {fileID: 1402049730}
   - component: {fileID: 1402049729}
   - component: {fileID: 1402049728}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Star
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6631,7 +6631,7 @@ GameObject:
   - component: {fileID: 1824024298}
   - component: {fileID: 1824024297}
   - component: {fileID: 1824024296}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: MagicMushroom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7269,7 +7269,7 @@ GameObject:
   - component: {fileID: 1903847594}
   - component: {fileID: 1903847593}
   - component: {fileID: 1903847592}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: FireFlower
   m_TagString: Untagged
   m_Icon: {fileID: 0}

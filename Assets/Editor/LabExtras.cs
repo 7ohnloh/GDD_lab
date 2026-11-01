@@ -416,6 +416,32 @@ public static class LabExtras
         Debug.Log("Lab Extras: SmallFireMario set up. Small + flower = small fire Mario; then mushroom = big Fire Mario.");
     }
 
+    // ---------------- Powerups fell through the floor ----------------
+    // They were on the Obstacles layer, which ignores Ground and other Obstacles.
+    // Default lands on the ground, boxes and pipes, and Mario (also Default) can still touch it.
+    [MenuItem("Tools/Lab Extras/Fix Powerups Falling Through Floor")]
+    static void FixPowerupLayers()
+    {
+        if (!UnityEditor.SceneManagement.EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        string startPath = SceneManager.GetActiveScene().path;
+        int changed = 0;
+        foreach (string path in new[] { World11Path, World12Path })
+        {
+            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(path) == null) continue;
+            Scene scene = UnityEditor.SceneManagement.EditorSceneManager.OpenScene(path);
+            foreach (MagicMushroom p in Object.FindObjectsByType<MagicMushroom>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (p.gameObject.layer == 0) continue;
+                p.gameObject.layer = 0;
+                EditorUtility.SetDirty(p.gameObject);
+                changed++;
+            }
+            UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene);
+        }
+        UnityEditor.SceneManagement.EditorSceneManager.OpenScene(startPath);
+        Debug.Log($"Lab Extras: moved {changed} powerups to the Default layer in World 1-1 and 1-2. Both scenes are saved.");
+    }
+
     static T GetOrCreate<T>(string name) where T : ScriptableObject
     {
         string path = BuffFolder + "/" + name + ".asset";
